@@ -19,10 +19,11 @@ union semun {
     struct seminfo *__buf; /* buffer for IPC_INFO */
 };
 
-struct shared_use_ds{
-	int start;  //read,start指向待读的
-	int end;   //write,end指向待写区
-	char text[N];  //环形缓冲区
+//环形缓冲区
+struct shared_memory{
+	int start;  
+	int end;   
+	char text[N];  
 };
 
 
@@ -52,71 +53,72 @@ char c;
 
 int main()
 {
-	int shmid;
-	int semid;  //信号灯使用
-	pid_t readbuf,writebuf;
+	pid_t read_buffer, write_buffer;
+
+	//创建共享内存
 	struct shmid_ds shmids;
-	shmid = shmget((key_t)1234,sizeof(struct shared_use_ds),0666|IPC_CREAT);  //创建共享内存
-	if(shmid==-1)
+	int shmid = shmget(IPC_PRIVATE, sizeof(struct shared_memory), IPC_CREAT | 0666);  
+	if(shmid == -1)
     {
 		printf("shmget error!\n");
 		exit(1);
 	}
 
-	struct shared_use_ds* main_attach_addr = NULL;
-	main_attach_addr = (struct shared_use_ds*)shmat(shmid,0,0); //启动主进程main.cpp对共享内存的访问
-	if(main_attach_addr==(void*)-1)
+	// 访问共享内存
+	struct shared_memory* main_attach_addr = NULL;
+	main_attach_addr = (struct shared_memory*) shmat(shmid, 0, 0); 
+	if(main_attach_addr == (void*) -1)
     {
 		printf("main.cpp shmat error!\n");
 		exit(1);
 	}
-	main_attach_addr->end = main_attach_addr->start = 0;  //init
+	main_attach_addr->end = main_attach_addr -> start = 0;
 
 
 	// 创建信号灯
-	semid = semget((key_t)5678,3,IPC_CREAT|0666);//使用2个信号量
+	int semid = semget(IPC_PRIVATE, 3 , IPC_CREAT | 0666);
 	//0号：init=1,缓冲区读写锁
 	//1号：init=N,空闲位置数
 	//2号：init=0,缓冲区已有数据数
 	arg.val = 1;
-	if(semctl(semid,0,SETVAL,arg)<0)
+	if(semctl(semid, 0, SETVAL, arg) < 0)
     {
 		printf("semctl 0 error!\n");
 		exit(0);
 	}
 	arg.val = N;
-	if(semctl(semid,1,SETVAL,arg)<0)
+	if(semctl(semid, 1, SETVAL, arg) < 0)
     {
 		printf("semctl 1 error!\n");
 		exit(0);
 	}
 	arg.val = 0;
-	if(semctl(semid,2,SETVAL,arg)<0)
+	if(semctl(semid, 2, SETVAL, arg) < 0)
     {
 		printf("semctl 2 error!\n");
 		exit(0);
 	}
 
 	//进程创建
-	if((readbuf=fork())==0)
+	if((read_buffer = fork()) == 0)
     {
 		printf("READ_BUFFER CREATED! \n");
-		execl("./read","read",NULL);
+		execl("./read", "read", NULL);
 		exit(0);
 	}
-    else if((writebuf=fork())==0)
+    else if((write_buffer = fork()) == 0)
     {
 		printf("WRITE_BUFFER CREATED! \n");
-		execl("./write","write",NULL);
+		execl("./write", "write", NULL);
 		exit(0);
 	}
     else
-    {  //father
+    {
 		wait(NULL);
 		wait(NULL);
 
-		semctl(semid,3,IPC_RMID,arg);
-		shmctl(shmid,IPC_RMID,NULL);
+		semctl(semid, 3, IPC_RMID, arg);
+		shmctl(shmid, IPC_RMID, NULL);
 	}
 
 
