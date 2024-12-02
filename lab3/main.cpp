@@ -60,7 +60,7 @@ int main()
 	int shmid = shmget((key_t)1234, sizeof(struct shared_memory), 0666 | IPC_CREAT);  
 	if(shmid == -1)
     {
-		printf("shmget error!\n");
+		printf("[MAIN]: shmget error!\n");
 		exit(1);
 	}
 
@@ -69,7 +69,7 @@ int main()
 	main_attach_addr = (struct shared_memory*)shmat(shmid, 0, 0); 
 	if(main_attach_addr == (void*)-1)
     {
-		printf("main.cpp shmat error!\n");
+		printf("[MAIN]: shmat error!\n");
 		exit(1);
 	}
 	main_attach_addr->end = main_attach_addr -> start = 0;
@@ -83,32 +83,32 @@ int main()
 	arg.val = 1;
 	if(semctl(semid, 0, SETVAL, arg) < 0)
     {
-		printf("semctl 0 error!\n");
+		printf("[MAIN]: semctl 0 error!\n");
 		exit(0);
 	}
 	arg.val = N;
 	if(semctl(semid, 1, SETVAL, arg) < 0)
     {
-		printf("semctl 1 error!\n");
+		printf("[MAIN]: semctl 1 error!\n");
 		exit(0);
 	}
 	arg.val = 0;
 	if(semctl(semid, 2, SETVAL, arg) < 0)
     {
-		printf("semctl 2 error!\n");
+		printf("[MAIN]: semctl 2 error!\n");
 		exit(0);
 	}
 
 	//进程创建
 	if((read_buffer = fork()) == 0)
     {
-		printf("READ_BUFFER CREATED! \n");
+		printf("[MAIN]: READ_BUFFER CREATED!\n");
 		execl("./read", "read", NULL);
 		exit(0);
 	}
     else if((write_buffer = fork()) == 0)
     {
-		printf("WRITE_BUFFER CREATED! \n");
+		printf("[MAIN]: WRITE_BUFFER CREATED!\n");
 		execl("./write", "write", NULL);
 		exit(0);
 	}

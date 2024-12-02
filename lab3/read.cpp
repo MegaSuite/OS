@@ -7,6 +7,7 @@
 #include<stdio.h>
 #include<unistd.h>
 
+using namespace std;
 
 #define N 10
 
@@ -48,6 +49,14 @@ struct sembuf sem;
 
 int main()
 {
+	int shmid = shmget((key_t)1234, sizeof(struct shared_memory), 0666 | IPC_CREAT);
+	if(shmid == -1)
+	{
+		printf("[READ]: shmget error!\n");
+		exit(2);
+	}
+
+
 	int semid = semget((key_t)5678, 3, IPC_CREAT | 0666);
 	if(semid == -1)
 	{
@@ -55,12 +64,6 @@ int main()
 		exit(2);
 	}
 
-	int shmid = shmget((key_t)1234, sizeof(struct shared_memory), 0666 | IPC_CREAT);
-	if(shmid == -1)
-	{
-		printf("[READ]: shmget error!\n");
-		exit(2);
-	}
 
 	struct shared_memory* write_addr = NULL;
 	write_addr = (struct shared_memory*)shmat(shmid, 0, 0);
@@ -79,10 +82,10 @@ int main()
 	{
 		ch = fgetc(fpr);
 		
-		P(semid, 1); //缓冲区空余位置数
+		P(semid, 1);
 		write_addr -> text[write_addr -> end] = ch;
 		write_addr -> end = (write_addr -> end + 1) % N;
-		V(semid, 2); //缓冲区已写入数
+		V(semid, 2);
 		put ++;
 
 		if(put % 10 == 0)
