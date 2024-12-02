@@ -7,7 +7,6 @@
 #include<stdio.h>
 #include<unistd.h>
 
-using namespace std;
 
 #define N 10
 
@@ -49,14 +48,14 @@ struct sembuf sem;
 
 int main()
 {
-	int semid = semget(IPC_PRIVATE, 3, IPC_CREAT | 0666);
+	int semid = semget((key_t)5678, 3, IPC_CREAT | 0666);
 	if(semid == -1)
 	{
 		printf("[READ]: semget error!\n");
 		exit(2);
 	}
 
-	int shmid = shmget(IPC_PRIVATE, sizeof(struct shared_memory), IPC_CREAT | 0666);
+	int shmid = shmget((key_t)1234, sizeof(struct shared_memory), 0666 | IPC_CREAT);
 	if(shmid == -1)
 	{
 		printf("[READ]: shmget error!\n");
@@ -64,7 +63,7 @@ int main()
 	}
 
 	struct shared_memory* write_addr = NULL;
-	write_addr = (struct shared_memory*) shmat(shmid, 0, 0);
+	write_addr = (struct shared_memory*)shmat(shmid, 0, 0);
 	
 	FILE* fpr=NULL;
 	fpr = fopen("./input.txt", "r");

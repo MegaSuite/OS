@@ -7,7 +7,6 @@
 #include<stdio.h>
 #include<unistd.h>
 
-using namespace std;
 
 #define N 10
 
@@ -50,14 +49,14 @@ struct sembuf sem;
 
 int main()
 {
-	int semid = semget(IPC_PRIVATE, 3, IPC_CREAT | 0666);
+	int semid = semget((key_t)5678, 3, IPC_CREAT | 0666);
 	if(semid == -1)
 	{
 		printf("[WRITE]: semget error! \n");
 		exit(2);
 	}
 
-	int shmid = shmget(IPC_PRIVATE, sizeof(struct shared_memory), IPC_CREAT | 0666);
+	int shmid = shmget((key_t)1234, sizeof(struct shared_memory), 0666 | IPC_CREAT);
 	if(shmid == -1)
 	{
 		printf("shmget error!\n");
@@ -65,7 +64,7 @@ int main()
 	}
 
 	struct shared_memory* read_addr = NULL;
-	read_addr = (struct shared_memory*) shmat(shmid, 0, 0);
+	read_addr = (struct shared_memory*)shmat(shmid, 0, 0);
 	
 	FILE* fpw = NULL;
 	fpw = fopen("./output.txt", "w");
@@ -76,21 +75,21 @@ int main()
 	}
 
 	int get = 0;
-	char ch;
+	char chr;
 	while(1)
 	{
 		P(semid, 2);
-		ch = read_addr -> text[read_addr -> start];
+		chr = read_addr -> text[read_addr -> start];
 		read_addr -> start = (read_addr -> start + 1) % N;
 		V(semid, 1);
 		get ++;
 
 		if((get % 10 == 0))
 			printf("[WRITE]: Buffer OUT: %d bytes\n", get);
-		if(ch == EOF)
+		if(chr == EOF)
 			break;
 
-		fputc(ch, fpw);
+		fputc(chr, fpw);
 	}
 	fclose(fpw);
 	printf("WRITEN output.txt!\n");
