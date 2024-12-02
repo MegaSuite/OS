@@ -78,7 +78,7 @@ int main()
 	// 创建信号灯
 	int semid = semget((key_t)5678, 3 , IPC_CREAT | 0666);
 	//0号：init=1,缓冲区读写锁
-	//1号：init=N,空闲位置数
+	//1号：init=N,缓冲区空闲位置数
 	//2号：init=0,缓冲区已有数据数
 	arg.val = 1;
 	if(semctl(semid, 0, SETVAL, arg) < 0)

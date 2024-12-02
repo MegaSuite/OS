@@ -49,7 +49,7 @@ struct sembuf sem;
 
 int main()
 {
-	int shmid = shmget((key_t)1234, sizeof(struct shared_memory), 0666 | IPC_CREAT);
+	int shmid = shmget(key_t 1234, sizeof(struct shared_memory), 0666 | IPC_CREAT);
 	if(shmid == -1)
 	{
 		printf("[READ]: shmget error!\n");
@@ -57,7 +57,7 @@ int main()
 	}
 
 
-	int semid = semget((key_t)5678, 3, IPC_CREAT | 0666);
+	int semid = semget(key_t 5678, 3, IPC_CREAT | 0666);
 	if(semid == -1)
 	{
 		printf("[READ]: semget error!\n");
