@@ -57,7 +57,7 @@ int main()
 
 	//创建共享内存
 	struct shmid_ds shmids;
-	int shmid = shmget(IPC_PRIVATE, sizeof(struct shared_memory), IPC_CREAT | 0666);  
+	int shmid = shmget((key_t)1234, sizeof(struct shared_memory), 0666 | IPC_CREAT);  
 	if(shmid == -1)
     {
 		printf("shmget error!\n");
@@ -66,8 +66,8 @@ int main()
 
 	// 访问共享内存
 	struct shared_memory* main_attach_addr = NULL;
-	main_attach_addr = (struct shared_memory*) shmat(shmid, 0, 0); 
-	if(main_attach_addr == (void*) -1)
+	main_attach_addr = (struct shared_memory*)shmat(shmid, 0, 0); 
+	if(main_attach_addr == (void*)-1)
     {
 		printf("main.cpp shmat error!\n");
 		exit(1);
@@ -76,7 +76,7 @@ int main()
 
 
 	// 创建信号灯
-	int semid = semget(IPC_PRIVATE, 3 , IPC_CREAT | 0666);
+	int semid = semget((key_t)5678, 3 , IPC_CREAT | 0666);
 	//0号：init=1,缓冲区读写锁
 	//1号：init=N,空闲位置数
 	//2号：init=0,缓冲区已有数据数
