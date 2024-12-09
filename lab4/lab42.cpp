@@ -72,21 +72,11 @@ void printdir(char *dir)
         }
 
         // traverse
-        std::stack<struct dirent*> entries;
         while ((entry = readdir(dp)) != NULL) 
         {
             // ignore . & ..
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
-
-            entries.push(entry);
-        }
-
-        // output
-        while (!entries.empty()) 
-        {
-            entry = entries.top();
-            entries.pop();
 
             // full path
             snprintf(path, sizeof(path), "%s/%s", current_path.c_str(), entry->d_name);
