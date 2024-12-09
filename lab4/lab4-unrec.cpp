@@ -10,7 +10,7 @@
 
 // 将文件权限转换为可读字符串
 void print_permissions(mode_t mode) {
-    char perms[10] = "----------";
+    char perms[11] = "----------";
     
     // 文件类型
     if (S_ISDIR(mode)) perms[0] = 'd';
