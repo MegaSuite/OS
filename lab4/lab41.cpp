@@ -8,25 +8,20 @@
 #include <pwd.h>
 #include <grp.h>
 
-// 将文件权限转换为可读字符串
 void print_permissions(mode_t mode) {
     char perms[11] = "----------";
     
-    // 文件类型
     if (S_ISDIR(mode)) perms[0] = 'd';
     else if (S_ISLNK(mode)) perms[0] = 'l';
     
-    // 用户权限
     if (mode & S_IRUSR) perms[1] = 'r';
     if (mode & S_IWUSR) perms[2] = 'w';
     if (mode & S_IXUSR) perms[3] = 'x';
     
-    // 组权限
     if (mode & S_IRGRP) perms[4] = 'r';
     if (mode & S_IWGRP) perms[5] = 'w';
     if (mode & S_IXGRP) perms[6] = 'x';
     
-    // 其他用户权限
     if (mode & S_IROTH) perms[7] = 'r';
     if (mode & S_IWOTH) perms[8] = 'w';
     if (mode & S_IXOTH) perms[9] = 'x';
@@ -40,14 +35,11 @@ void printdir(char *dir, int depth) {
     struct stat statbuf;
     char path[1024];
 
-    // 打开目录
+    // 使用完整路径打开目录
     if ((dp = opendir(dir)) == NULL) {
         fprintf(stderr, "Cannot open directory: %s\n", dir);
         return;
     }
-
-    // 改变当前工作目录
-    chdir(dir);
 
     // 遍历目录项
     while ((entry = readdir(dp)) != NULL) {
@@ -55,9 +47,12 @@ void printdir(char *dir, int depth) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
             continue;
 
+        // 构建完整路径
+        snprintf(path, sizeof(path), "%s/%s", dir, entry->d_name);
+
         // 获取文件状态
-        if (lstat(entry->d_name, &statbuf) == -1) {
-            fprintf(stderr, "Error getting stat for %s\n", entry->d_name);
+        if (lstat(path, &statbuf) == -1) {
+            fprintf(stderr, "Error getting stat for %s\n", path);
             continue;
         }
 
@@ -90,19 +85,12 @@ void printdir(char *dir, int depth) {
 
         // 如果是目录，递归查询
         if (S_ISDIR(statbuf.st_mode)) {
-            printf("/");
-            printf("\n");
-            
-            // 构建完整路径
-            snprintf(path, sizeof(path), "%s/%s", dir, entry->d_name);
-            printdir(path, depth + 4);
+            printf("/\n");
+            printdir(path, depth + 1);
         } else {
             printf("\n");
         }
     }
-
-    // 返回上级目录
-    chdir("..");
 
     // 关闭目录
     closedir(dp);
@@ -110,15 +98,23 @@ void printdir(char *dir, int depth) {
 
 int main(int argc, char *argv[]) {
     char *dir;
+    char resolved_path[1024];
     
     // 如果没有指定目录，使用当前目录
-    if (argc == 1)
+    if (argc == 1) {
         dir = ".";
-    else
+    } else {
         dir = argv[1];
+    }
 
-    printf("Directory scan of %s:\n", dir);
-    printdir(dir, 0);
+    // 获取规范化的绝对路径
+    if (realpath(dir, resolved_path) == NULL) {
+        perror("Error resolving path");
+        return 1;
+    }
+
+    printf("Directory scan of %s:\n", resolved_path);
+    printdir(resolved_path, 0);
 
     return 0;
 }
