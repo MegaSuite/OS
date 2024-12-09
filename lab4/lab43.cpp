@@ -49,7 +49,7 @@ void print_permissions(mode_t mode)
     printf("%s ", perms);
 }
 
-void print_entry(const char* path, const char* name, struct stat& statbuf, int depth) 
+void print_entry(const char* path, const char* name, const struct stat& statbuf, int depth) 
 {
     // indent
     for (int i = 0; i < depth; i++)
