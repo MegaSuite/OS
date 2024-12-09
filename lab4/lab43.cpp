@@ -129,7 +129,7 @@ void printdir(char *dir)
         closedir(dp);
 
         // sort
-        std::stable_sort(entries.begin(), entries.end(), 
+        std::sort(entries.begin(), entries.end(), 
             [](const auto& a, const auto& b) {
                 return a.first < b.first;
             }
