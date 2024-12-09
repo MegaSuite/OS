@@ -8,6 +8,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <stack>
+#include <string>
 
 void print_permissions(mode_t mode) 
 {
