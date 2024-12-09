@@ -49,12 +49,12 @@ void print_permissions(mode_t mode)
 
 void printdir(char *dir) 
 {
-    stack<pair<string, int>> dir_stack;
+    std::stack<std::pair<std::string, int>> dir_stack;
     dir_stack.push({dir, 0});
 
     while (!dir_stack.empty()) 
     {
-        string current_path = dir_stack.top().first;
+        std::string current_path = dir_stack.top().first;
         int depth = dir_stack.top().second;
         dir_stack.pop();
 
@@ -71,7 +71,7 @@ void printdir(char *dir)
         }
 
         // traverse
-        stack<struct dirent*> entries;
+        std::stack<struct dirent*> entries;
         while ((entry = readdir(dp)) != NULL) 
         {
             // ignore . & ..
